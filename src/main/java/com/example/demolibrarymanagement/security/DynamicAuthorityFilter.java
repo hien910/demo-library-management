@@ -25,9 +25,7 @@ import java.util.List;
 @Order(value = 3)
 @RequiredArgsConstructor
 public class DynamicAuthorityFilter extends OncePerRequestFilter {
-    private final IRoleService roleService;
     private final RoleRepository roleRepository;
-    private final IPermissionService permissionService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
