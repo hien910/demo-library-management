@@ -26,7 +26,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DynamicAuthorityFilter extends OncePerRequestFilter {
     private final RoleRepository roleRepository;
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,

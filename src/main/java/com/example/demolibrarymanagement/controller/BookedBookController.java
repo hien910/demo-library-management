@@ -5,12 +5,15 @@ import com.example.demolibrarymanagement.DTO.response.Response;
 import com.example.demolibrarymanagement.exception.DataNotFoundException;
 import com.example.demolibrarymanagement.model.entity.Book;
 import com.example.demolibrarymanagement.model.entity.BookedBook;
+import com.example.demolibrarymanagement.model.entity.User;
 import com.example.demolibrarymanagement.repository.BookRepository;
 import com.example.demolibrarymanagement.repository.BookedBookRepository;
 import com.example.demolibrarymanagement.service.IBookedBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -27,20 +30,6 @@ public class BookedBookController {
 
     @PostMapping("/create")
     public ResponseEntity<Response<BookedBook>> createBooked(@RequestBody UpsertBorrowRequest request) throws DataNotFoundException {
-//        // check quá số lượng sách tối đa cho mượn
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User loginUSer = (User) authentication.getPrincipal();
-//        List<BookedBook> bookedBookList = bookedBookRepository.findBookedBookByUser_IdAndStatus(loginUSer.getId(), false);
-//        Integer numBorrowBook = 0;
-//        for (BookedBook b: bookedBookList) {
-//            numBorrowBook += b.getQuantity();
-//        }
-//        int checkMaxBooked = numBorrowBook + request.getQuantity();
-//        if(checkMaxBooked > 5){
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(new Response<>("400", "Request to borrow books in excess of the allowed number.", null));
-//        }
-
         try {
             BookedBook bookedBook = bookedBookService.createBooked(request);
             Response<BookedBook> response = new Response<>("201", "Tạo đặt sách thành công", bookedBook);

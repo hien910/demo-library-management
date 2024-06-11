@@ -51,6 +51,5 @@ public interface BookedBookRepository extends JpaRepository<BookedBook, Integer>
     List<User> findDueUser();
 
 
-
-
+    List<BookedBook> findBookedBookByUser_IdAndIsReturn(Integer id, boolean b);
 }

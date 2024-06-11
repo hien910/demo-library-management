@@ -1,5 +1,7 @@
 package com.example.demolibrarymanagement.security;
 
+import com.example.demolibrarymanagement.DTO.response.Response;
+import com.example.demolibrarymanagement.model.entity.Book;
 import com.example.demolibrarymanagement.model.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -41,7 +43,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             final String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                return;
+                return ;
             }
             final String token = authHeader.substring(7);
             String name = jwtUtil.extractSubject(token);
@@ -61,6 +63,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            throw new ServletException("Internal Server Error", e);
         }
     }
 

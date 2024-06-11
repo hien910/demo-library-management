@@ -26,11 +26,11 @@ public class SecurityFilter {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable); // Tắt CSRF
 
-        // Cấu hình form login
-        http.formLogin(formLogin -> {
-            formLogin.defaultSuccessUrl("/", true); // Nếu đăng nhập thành công thì chuyển hướng về trang chủ
-            formLogin.permitAll();
-        });
+//        // Cấu hình form login
+//        http.formLogin(formLogin -> {
+//            formLogin.defaultSuccessUrl("/", true); // Nếu đăng nhập thành công thì chuyển hướng về trang chủ
+//            formLogin.permitAll();
+//        });
         // Cấu hình phân quyền
         http.authorizeHttpRequests(authorizeRequests -> {
                     authorizeRequests.requestMatchers("POST","/api/user/login").permitAll();
