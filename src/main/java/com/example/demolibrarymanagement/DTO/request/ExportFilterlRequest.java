@@ -7,14 +7,16 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UpsertBorrowRequest {
-    Date dueDate;
-    Integer quantity;
-    Integer bookId;
+public class ExportFilterlRequest {
+    String bookName;
+    String userName;
+    Date bookedDateStart;
+    Date bookedDateEnd;
+    Date dueDateStart;
+    Date dueDateEnd;
 }

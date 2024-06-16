@@ -45,12 +45,18 @@ public class DynamicAuthorityFilter extends OncePerRequestFilter {
         Role role = roleRepository.findRoleById(user.getRole().getId());
         List<Permission> permissionList = role.getPermissions();
 
+        boolean isValid=false;
         for(Permission permission : permissionList){
             if (requestPath.equals(permission.getUrl())) {
-                filterChain.doFilter(request, response);
-                return;
+                isValid=true;
+                break;
             }
         }
+        if(isValid){
+            filterChain.doFilter(request, response);
+            return;
+        }
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method Not Allow");
+        throw new ServletException("Method Not Allow");
     }
 }

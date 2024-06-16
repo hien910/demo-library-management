@@ -43,7 +43,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             final String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                return ;
+                throw new ServletException("Unauthorized");
             }
             final String token = authHeader.substring(7);
             String name = jwtUtil.extractSubject(token);

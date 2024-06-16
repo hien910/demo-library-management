@@ -1,4 +1,5 @@
 package com.example.demolibrarymanagement.controller;
+
 import com.example.demolibrarymanagement.DTO.request.LoginRequest;
 import com.example.demolibrarymanagement.DTO.request.RegisterRequest;
 import com.example.demolibrarymanagement.DTO.request.UpsertBook;
@@ -14,8 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,21 +33,27 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public ResponseEntity<Response<String>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request)
-            throws DataNotFoundException, AccountLockedException {
-        String token = userService.login(loginRequest, request);
-        return ResponseEntity.ok().body(
-                new Response<>("200", "Login successfully", token)
-        );
+    public ResponseEntity<Response<String>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        try {
+
+            return ResponseEntity.ok().body(
+                    new Response<>("200", "Login successfully",  userService.login(loginRequest, request))
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new Response<>("500", e.getMessage())
+            );
+        }
     }
+
     @PostMapping("/register")
-    public ResponseEntity<Response<User>> register(@RequestBody RegisterRequest request){
-        try{
+    public ResponseEntity<Response<User>> register(@RequestBody RegisterRequest request) {
+        try {
             User user = userService.register(request);
             return ResponseEntity.ok().body(
                     new Response<>("200", "Register successfully", user)
             );
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     new Response<>("500", e.getMessage())
             );

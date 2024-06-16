@@ -63,6 +63,17 @@ class DemoLibraryManagementApplicationTests {
 	}
 
 	@Test
+	void update_book() {
+		Faker faker =new Faker();
+		List<Book> books = bookRepository.findAll();
+		books.forEach(b -> {
+			b.setCode(faker.code().asin());
+			bookRepository.save(b);
+		});
+	}
+
+
+	@Test
 	void update_password() {
 		List<User> userList = userRepository.findAll();
 		userList.forEach(user -> {

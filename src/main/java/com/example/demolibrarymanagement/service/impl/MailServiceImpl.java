@@ -60,7 +60,7 @@ public class MailServiceImpl {
         List<User> dueUsers = bookedBookRepository.findDueUser();
         List<Email> emailList  = new ArrayList<>();
         for (User user : dueUsers) {
-            List<BookedBook> bookedBookList = bookedBookRepository.findBookedBookByUserId(user.getId());
+            List<BookedBook> bookedBookList = bookedBookRepository.findBookedBooksDueByUserId(user.getId());
             StringBuilder contentDueSoon = new StringBuilder();
             StringBuilder contentOverDue = new StringBuilder();
             for (BookedBook bookedBook : bookedBookList) {

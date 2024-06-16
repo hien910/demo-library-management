@@ -16,6 +16,7 @@ import com.example.demolibrarymanagement.service.IUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,7 +42,6 @@ public class UserServiceImpl implements IUserService {
     private final JwtUtil jwtUtil;
     private final ModelMapper modelMapper;
     private final RoleRepository roleRepository;
-    private final ITokenService tokenService;
 
     @Override
     public String login(LoginRequest loginRequest, HttpServletRequest request) throws DataNotFoundException, AccountLockedException {
@@ -52,6 +52,7 @@ public class UserServiceImpl implements IUserService {
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
         );
+
         try {
             // Tiến hành xác thực
             Authentication authentication = authenticationManager.authenticate(token);
@@ -85,15 +86,15 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public User updateUser(UpsertUser upsertUser, Integer id) throws DataNotFoundException {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User loginUSer = (User) authentication.getPrincipal();
-//        if(!loginUSer.getId().equals(id)){
-//            throw new AccessDeniedException("Access denied: You are not authorized to access this resource.");
-//        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User loginUSer = (User) authentication.getPrincipal();
+        if(!loginUSer.getId().equals(id)){
+            throw new AccessDeniedException("Access denied: You are not authorized to access this resource.");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Cannot find user with id: " + id));
         user.setName(upsertUser.getName());
-        user.setEmail(upsertUser.getEmail());
+        user.setPassword(passwordEncoder.encode(upsertUser.getPassword()));
         user.setUpdatedAt(new Date());
         return userRepository.save(user);
     }

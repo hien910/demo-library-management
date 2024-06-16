@@ -1,10 +1,7 @@
 package com.example.demolibrarymanagement.security;
 
-import com.example.demolibrarymanagement.exception.DataNotFoundException;
-import com.example.demolibrarymanagement.model.entity.User;
+
 import com.example.demolibrarymanagement.repository.UserRepository;
-import com.example.demolibrarymanagement.security.error.CustomAccessDeniedHandler;
-//import com.example.demolibrarymanagement.security.error.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

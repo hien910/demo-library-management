@@ -1,22 +1,18 @@
 package com.example.demolibrarymanagement.controller;
 
+import com.example.demolibrarymanagement.DTO.request.ExportFilterlRequest;
 import com.example.demolibrarymanagement.DTO.request.UpsertBorrowRequest;
 import com.example.demolibrarymanagement.DTO.response.Response;
 import com.example.demolibrarymanagement.exception.DataNotFoundException;
-import com.example.demolibrarymanagement.model.entity.Book;
 import com.example.demolibrarymanagement.model.entity.BookedBook;
-import com.example.demolibrarymanagement.model.entity.User;
 import com.example.demolibrarymanagement.repository.BookRepository;
 import com.example.demolibrarymanagement.repository.BookedBookRepository;
 import com.example.demolibrarymanagement.service.IBookedBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -27,12 +23,17 @@ public class BookedBookController {
     private final IBookedBookService bookedBookService;
     private final BookRepository bookRepository;
     private final BookedBookRepository bookedBookRepository;
+    @PostMapping("/export-booked-filter")
+    public ResponseEntity<?> exportGetBooked(@RequestBody ExportFilterlRequest request){
+        bookedBookService.exportGetBooked(request);
+        return ResponseEntity.status(HttpStatus.OK).body("Export excel successfully!");
+    }
 
     @PostMapping("/create")
-    public ResponseEntity<Response<BookedBook>> createBooked(@RequestBody UpsertBorrowRequest request) throws DataNotFoundException {
+    public ResponseEntity<Response<List<BookedBook>>> createBooked(@RequestBody List<UpsertBorrowRequest> request) throws DataNotFoundException {
         try {
-            BookedBook bookedBook = bookedBookService.createBooked(request);
-            Response<BookedBook> response = new Response<>("201", "Tạo đặt sách thành công", bookedBook);
+            List<BookedBook> bookedBook = bookedBookService.createBooked(request);
+            Response<List<BookedBook>> response = new Response<>("201", "Tạo đặt sách thành công", bookedBook);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (DataNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
