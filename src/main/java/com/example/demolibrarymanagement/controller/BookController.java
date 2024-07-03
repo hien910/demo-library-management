@@ -1,9 +1,12 @@
 package com.example.demolibrarymanagement.controller;
+import com.example.demolibrarymanagement.DTO.request.BookInfoDTO;
 import com.example.demolibrarymanagement.DTO.request.FilterRequest;
+import com.example.demolibrarymanagement.DTO.request.GetByAuthorCategoryRequest;
 import com.example.demolibrarymanagement.DTO.request.UpsertBook;
 import com.example.demolibrarymanagement.DTO.response.Response;
 import com.example.demolibrarymanagement.exception.DataNotFoundException;
 import com.example.demolibrarymanagement.model.entity.Book;
+import com.example.demolibrarymanagement.model.entity.MostBorrowBook;
 import com.example.demolibrarymanagement.service.IBookService;
 import com.example.demolibrarymanagement.service.impl.ExcelService;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +27,23 @@ import java.util.Map;
 @RequestMapping("api/book")
 public class BookController {
     private final IBookService bookService;
-    private final ExcelService excelService;
+
     @PostMapping()
     public ResponseEntity<Response<Page<Book>>> getAllBook(@RequestBody FilterRequest filterRequest, Pageable pageable){
         Page<Book> books = bookService.getAllBook(filterRequest,pageable);
         return ResponseEntity.ok().body(
                 new Response<>("200", "Get all books successfully", books));
     }
+    @PostMapping("/get-by-author-category")
+    public ResponseEntity<Response<List<BookInfoDTO>>> getBookByAuthorCategory(@RequestBody GetByAuthorCategoryRequest request){
+        List<BookInfoDTO> books = bookService.getBookInfo(request);
+        return ResponseEntity.ok().body(
+                new Response<>("200", "Get books successfully", books));
+    }
 
     @GetMapping("/most-borrow")
-    public ResponseEntity<Response<LinkedHashMap<Book, Integer>>> getMostBorrowedBooks(){
-        LinkedHashMap<Book, Integer> mostBorrowedBooks = bookService.getMostBorrowedBooks();
+    public ResponseEntity<Response<List<MostBorrowBook>>> getMostBorrowedBooks(){
+        List<MostBorrowBook> mostBorrowedBooks = bookService.getMostBorrowedBooks();
         return ResponseEntity.ok().body(
                 new Response<>("200", "Get most borrowed books successfully", mostBorrowedBooks));
     }

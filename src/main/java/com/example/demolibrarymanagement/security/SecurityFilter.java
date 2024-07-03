@@ -33,6 +33,8 @@ public class SecurityFilter {
 //        });
         // Cấu hình phân quyền
         http.authorizeHttpRequests(authorizeRequests -> {
+                    authorizeRequests.requestMatchers("/swagger-ui.html","/swagger-ui/**", "/v3/api-docs/**").permitAll();
+//                    authorizeRequests.requestMatchers("").permitAll();
                     authorizeRequests.requestMatchers("POST","/api/user/login").permitAll();
                     authorizeRequests.requestMatchers("POST","/api/user/register").permitAll();
                     authorizeRequests.requestMatchers("POST", "/api/book").permitAll();

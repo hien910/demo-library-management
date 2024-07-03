@@ -18,23 +18,7 @@ public interface EmailRepository extends JpaRepository<Email, Integer> {
 
     List<Email> findByStatus(Boolean status);
 
-//    @Query("SELECT e FROM Email e WHERE e.typeMail = :typeMail " +
-//            "AND e.toEmail = :toEmail " +
-//            "AND e.status = false " +
-//            "AND DATE(e.createdAt) = CURRENT_DATE")
-//    List<Email> findByTypeMailAndToEmailAndStatusAndCreatedAtToday(@Param("typeMail") TypeMail typeMail, @Param("toEmail") String toEmail);
-//    @Query("SELECT e FROM Email e WHERE  DATE(e.createdAt) = (CURRENT_DATE) AND e.status = false")
-//    List<Email> findByCreatedAtIsToday();
-
     @Query("SELECT DISTINCT e FROM Email e WHERE DATE(e.sendTime) = CURRENT_DATE AND e.status = false")
     List<Email> findDistinctToEmailsSendTimeToday();
 
-//    @Query("SELECT bb.id FROM Email e JOIN e.bookedBook bb WHERE DATE(e.createdAt) = CURRENT_DATE")
-//    List<Integer> findBookedBookIdsCreatedByToday();
-
-    @Query(value = "SELECT u.id FROM users u " +
-            "WHERE u.email IN (SELECT DISTINCT e.to_email FROM emails e " +
-            "WHERE DATE(e.created_at) = CURRENT_DATE)"
-            , nativeQuery = true)
-    List<Integer> findUserIdsWithEmailsCreatedToday();
 }

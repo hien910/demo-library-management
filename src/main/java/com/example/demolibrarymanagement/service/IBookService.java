@@ -1,9 +1,12 @@
 package com.example.demolibrarymanagement.service;
 
+import com.example.demolibrarymanagement.DTO.request.BookInfoDTO;
 import com.example.demolibrarymanagement.DTO.request.FilterRequest;
+import com.example.demolibrarymanagement.DTO.request.GetByAuthorCategoryRequest;
 import com.example.demolibrarymanagement.DTO.request.UpsertBook;
 import com.example.demolibrarymanagement.exception.DataNotFoundException;
 import com.example.demolibrarymanagement.model.entity.Book;
+import com.example.demolibrarymanagement.model.entity.MostBorrowBook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,13 +23,9 @@ public interface IBookService {
     Page<Book> getAllBook(FilterRequest filterRequest, Pageable pageable);
     Book createBook(UpsertBook upsertBook);
     Book deleteBook(Integer id) throws DataNotFoundException;
-    LinkedHashMap<Book, Integer> getMostBorrowedBooks();
+    List<MostBorrowBook> getMostBorrowedBooks();
     List<Book> getBooksRunningOutOfStock(int threshold);
-
-    Page<Book> findBookByName(String name, Integer page, Integer size);
-
-
     Book updateBook(UpsertBook upsertBook, Integer id) throws DataNotFoundException;
-
     void importExcelFile(MultipartFile file) throws IOException;
+    List<BookInfoDTO> getBookInfo(GetByAuthorCategoryRequest request);
 }

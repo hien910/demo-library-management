@@ -63,5 +63,7 @@ public interface BookedBookRepository extends JpaRepository<BookedBook, Integer>
             ")"
     )
     List<BookedBook> findByExportExcelRequest(ExportFilterlRequest request);
+
+    BookedBook findBookedBookById(Integer id);
 }
 

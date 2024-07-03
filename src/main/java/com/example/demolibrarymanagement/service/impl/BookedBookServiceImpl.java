@@ -133,30 +133,30 @@ public class BookedBookServiceImpl implements IBookedBookService {
             long overdueDays = (new Date().getTime() - bookedBook.getDueDate().getTime()) / (1000 * 60 * 60 * 24);
             System.out.println(overdueDays);
             if (bookedBook.getIsReturn()) {
-                row.createCell(6).setCellValue("Đã trả"+overdueDays);
+                row.createCell(6).setCellValue("Đã trả");
                 row.createCell(7).setCellValue("");
             } else if (overdueDays > 0) {
-                row.createCell(6).setCellValue("Chưa trả"+overdueDays);
-                row.createCell(7).setCellValue("Quá hạn " + overdueDays + " ngày.");
-            } else if (overdueDays > -3 && overdueDays <= 0) {
-                row.createCell(6).setCellValue("Chưa trả"+overdueDays);
+                row.createCell(6).setCellValue("Chưa trả");
+                row.createCell(7).setCellValue("Quá hạn");
+            } else if (overdueDays > -3 ) {
+                row.createCell(6).setCellValue("Chưa trả");
                 row.createCell(7).setCellValue("Sắp hết hạn trả");
             } else {
-                row.createCell(6).setCellValue("Chưa trả"+overdueDays);
+                row.createCell(6).setCellValue("Chưa trả");
                 row.createCell(7).setCellValue("");
             }
-            String fileName = "GetBookedFilter.xlsx";
-            fileFullPath = filePath + File.separator + fileName;
+        }
+        String fileName = "GetBookedFilter.xlsx";
+        fileFullPath = filePath + File.separator + fileName;
 
-            // Kiểm tra và đổi tên file nếu đã tồn tại
-            File file = new File(fileFullPath);
-            int fileCount = 1;
-            while (file.exists()) {
-                fileName = "GetBookedFilter" + fileCount + ".xlsx";
-                fileFullPath = filePath + File.separator + fileName;
-                file = new File(fileFullPath);
-                fileCount++;
-            }
+        // Kiểm tra và đổi tên file nếu đã tồn tại
+        File file = new File(fileFullPath);
+        int fileCount = 1;
+        while (file.exists()) {
+            fileName = "GetBookedFilter" + fileCount + ".xlsx";
+            fileFullPath = filePath + File.separator + fileName;
+            file = new File(fileFullPath);
+            fileCount++;
         }
 
         // Ghi workbook ra file hệ thống

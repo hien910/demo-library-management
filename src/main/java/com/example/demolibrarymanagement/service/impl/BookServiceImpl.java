@@ -1,10 +1,14 @@
 package com.example.demolibrarymanagement.service.impl;
 
+import com.example.demolibrarymanagement.DTO.request.BookInfoDTO;
 import com.example.demolibrarymanagement.DTO.request.FilterRequest;
+import com.example.demolibrarymanagement.DTO.request.GetByAuthorCategoryRequest;
 import com.example.demolibrarymanagement.DTO.request.UpsertBook;
 import com.example.demolibrarymanagement.exception.DataNotFoundException;
+import com.example.demolibrarymanagement.model.entity.Author;
 import com.example.demolibrarymanagement.model.entity.Book;
-import com.example.demolibrarymanagement.model.entity.BookedBook;
+import com.example.demolibrarymanagement.model.entity.Category;
+import com.example.demolibrarymanagement.model.entity.MostBorrowBook;
 import com.example.demolibrarymanagement.repository.AuthorRepository;
 import com.example.demolibrarymanagement.repository.BookRepository;
 import com.example.demolibrarymanagement.repository.BookedBookRepository;
@@ -17,10 +21,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -46,16 +48,8 @@ public class BookServiceImpl implements IBookService {
     }
 
     @Override
-    public LinkedHashMap<Book, Integer> getMostBorrowedBooks() {
-        List<Object[]> results = bookRepository.findMostBorrowedBooks();
-        LinkedHashMap<Book, Integer> mostBorrowedBooks = new LinkedHashMap<>();
-
-        for (Object[] result : results) {
-            Book book = (Book) result[0];
-            Integer totalQuantity = ((Number) result[1]).intValue();
-            mostBorrowedBooks.put(book, totalQuantity);
-        }
-        return mostBorrowedBooks;
+    public List<MostBorrowBook> getMostBorrowedBooks() {
+        return bookRepository.findMostBorrowedBooks();
     }
 
     @Override
@@ -98,14 +92,6 @@ public class BookServiceImpl implements IBookService {
         return book;
     }
 
-
-    @Override
-    @Transactional
-    public Page<Book> findBookByName(String name, Integer page, Integer size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return bookRepository.findBookByTitleContainingIgnoreCase(name, pageRequest);
-    }
-
     @Override
     @Transactional
     public void importExcelFile(MultipartFile file) throws IOException {
@@ -120,23 +106,41 @@ public class BookServiceImpl implements IBookService {
             Workbook workbookOut = new XSSFWorkbook();
             Sheet sheetOut = workbookOut.createSheet("Response");
 
+            List<Author> authorList = authorRepository.findAll();
+            List<Author> addNewAuthor = new ArrayList<>();
+            List<Category> categoryList = categoryRepository.findAll();
+            List<Category> addNewCategory = new ArrayList<>();
+
+
+            List<String> bookCodeDB = bookRepository.findAllCode();
+            Set<String> bookCodelist = new HashSet<>();
+
             // Đọc dữ liệu từ file Excel và lưu vào danh sách books
             for (int i = 0; i < numberOfRows; i++) {
                 Row rowIn = sheetIn.getRow(i);
                 if (rowIn == null) continue;
                 Row rowOut = sheetOut.createRow(i);
-                rowOut.createCell(0).setCellValue((rowIn.getCell(0) != null && rowIn.getCell(0).getCellType() != CellType.BLANK) ? rowIn.getCell(0).getStringCellValue() : "");
+                rowOut.createCell(0).setCellValue((rowIn.getCell(0) != null && rowIn.getCell(0).getCellType() != CellType.BLANK) ? rowIn.getCell(0).toString() : "");
                 rowOut.createCell(1).setCellValue((rowIn.getCell(1) != null && rowIn.getCell(1).getCellType() != CellType.BLANK) ? rowIn.getCell(1).toString() : "");
                 rowOut.createCell(2).setCellValue((rowIn.getCell(2) != null && rowIn.getCell(2).getCellType() != CellType.BLANK) ? rowIn.getCell(2).toString() : "");
                 rowOut.createCell(3).setCellValue((rowIn.getCell(3) != null && rowIn.getCell(3).getCellType() != CellType.BLANK) ? rowIn.getCell(3).toString() : "");
                 rowOut.createCell(4).setCellValue((rowIn.getCell(4) != null && rowIn.getCell(4).getCellType() != CellType.BLANK) ? rowIn.getCell(4).toString() : "");
                 rowOut.createCell(5).setCellValue((rowIn.getCell(5) != null && rowIn.getCell(5).getCellType() != CellType.BLANK) ? rowIn.getCell(5).toString() : "");
 
-                if (i==0){
+                if (i == 0) {
                     rowOut.createCell(6).setCellValue("Trạng thái");
                     rowOut.createCell(7).setCellValue("Ghi chú");
+                    bookCodelist.add("List book code");
                     continue;
                 }
+
+                if (bookCodelist.contains(rowIn.getCell(5).getStringCellValue())) {
+                    rowOut.createCell(6).setCellValue("Thất bại");
+                    rowOut.createCell(7).setCellValue("Book code đã có trước đó");
+                    continue;
+                }
+                bookCodelist.add(rowIn.getCell(5).getStringCellValue());
+
                 boolean status = true;
                 for (int j = 0; j <= 5; j++) {
                     if (rowIn.getCell(j) == null || rowIn.getCell(j).getCellType() == CellType.BLANK) {
@@ -146,7 +150,7 @@ public class BookServiceImpl implements IBookService {
                         break;
                     }
                 }
-                if (!status){
+                if (!status) {
                     continue;
                 }
 
@@ -160,10 +164,10 @@ public class BookServiceImpl implements IBookService {
                         rowOut.createCell(6).setCellValue("Thất bại");
                         rowOut.createCell(7).setCellValue("Số lượng không phải là số nguyên!");
                         continue;
-                    }else {
+                    } else {
                         quantity = (int) numericValue;
                     }
-                }else if (cell.getCellType() == CellType.STRING) {
+                } else if (cell.getCellType() == CellType.STRING) {
                     // Xử lý cho kiểu dữ liệu STRING
                     String stringValue = cell.getStringCellValue();
                     try {
@@ -174,42 +178,35 @@ public class BookServiceImpl implements IBookService {
                         rowOut.createCell(7).setCellValue("Dữ liệu số lượng không đúng định dạng!");
                         continue;
                     }
-                }else {
+                } else {
                     // Kiểu dữ liệu của ô không phải là numeric
-                    System.out.println("Không đúng định dạng: Số lượng không là số nguyên.");
                     rowOut.createCell(6).setCellValue("Thất bại");
                     rowOut.createCell(7).setCellValue("Dữ liệu số lượng không đúng định dạng!");
                     continue;
                 }
 
-
-                List<Book> bookList = bookRepository.findByTitleAuthorCategory(
-                        rowIn.getCell(1).toString(),
-                        rowIn.getCell(3).toString(),
-                        rowIn.getCell(4).toString());
-                Book bookCheck = bookRepository.findBookByCode(rowIn.getCell(5).getStringCellValue());
-
-                if ( bookCheck!=null && !(bookList.contains(bookCheck))) {
+                if (bookCodeDB.contains(rowIn.getCell(5).getStringCellValue())) {
                     rowOut.createCell(6).setCellValue("Thất bại");
-                    rowOut.createCell(7).setCellValue("Sách không hợp lệ!");
+                    rowOut.createCell(7).setCellValue("Sách không hợp lệ");
                     continue;
-                }
-                Book book = bookRepository.findByTitleAuthorCategoryAndCode(
-                        rowIn.getCell(1).toString(),
-                        rowIn.getCell(3).toString(),
-                        rowIn.getCell(4).toString(),
-                        rowIn.getCell(5).toString());
-
-                if (book != null) {
-                    book.setUpdatedAt(new Date());
-                    book.setQuantity( (book.getQuantity() + quantity));
-                    books.add(book);
-                    rowOut.createCell(6).setCellValue("Thành công");
-                    rowOut.createCell(7).setCellValue("Đã thêm số lượng!");
                 } else {
+                    String desiredCategoryName = rowIn.getCell(4).getStringCellValue();
+                    String desiredAuthorName = rowIn.getCell(3).getStringCellValue();
+                    Author foundAuthor = authorList.stream()
+                            .filter(a -> a.getName().equals(desiredAuthorName))
+                            .findFirst()
+                            .orElse(null);;
+                    Category foundCategory = categoryList.stream()
+                            .filter(category -> category.getName().equals(desiredCategoryName))
+                            .findFirst().orElse(null);
+
+                    if (foundAuthor==null) foundAuthor = Author.builder().name(desiredAuthorName).build();
+                    if (foundCategory==null) foundCategory = Category.builder().name(desiredCategoryName).build();
+                    addNewAuthor.add(foundAuthor);
+                    addNewCategory.add(foundCategory);
                     Book newBook = Book.builder()
-                            .author(authorRepository.findAuthorByName(rowIn.getCell(3).getStringCellValue()))
-                            .category(categoryRepository.findCategoryByName(rowIn.getCell(4).getStringCellValue()))
+                            .author(foundAuthor)
+                            .category(foundCategory)
                             .title(rowIn.getCell(1).getStringCellValue())
                             .code(rowIn.getCell(5).getStringCellValue())
                             .quantity(quantity)
@@ -220,21 +217,22 @@ public class BookServiceImpl implements IBookService {
                     rowOut.createCell(6).setCellValue("Thành công");
                     rowOut.createCell(7).setCellValue("Đã thêm sách mới!");
                 }
-
-                String fileName = "ExcelReponse.xlsx";
-                fileFullPath = filePath + File.separator + fileName;
-
-                // Kiểm tra và đổi tên file nếu đã tồn tại
-                File fileReponse = new File(fileFullPath);
-                int fileCount = 1;
-                while (fileReponse.exists()) {
-                    fileName = "ExcelReponse" + fileCount + ".xlsx";
-                    fileFullPath = filePath + File.separator + fileName;
-                    fileReponse = new File(fileFullPath);
-                    fileCount++;
-                }
             }
             bookRepository.saveAll(books);
+            authorRepository.saveAll(addNewAuthor);
+            categoryRepository.saveAll(addNewCategory);
+            String fileName = "ExcelResponse.xlsx";
+            fileFullPath = filePath + File.separator + fileName;
+
+            // Kiểm tra và đổi tên file nếu đã tồn tại
+            File fileReponse = new File(fileFullPath);
+            int fileCount = 1;
+            while (fileReponse.exists()) {
+                fileName = "ExcelResponse" + fileCount + ".xlsx";
+                fileFullPath = filePath + File.separator + fileName;
+                fileReponse = new File(fileFullPath);
+                fileCount++;
+            }
             // Ghi workbook ra file hệ thống
             try (FileOutputStream fileOut = new FileOutputStream(fileFullPath)) {
                 workbookOut.write(fileOut);
@@ -246,5 +244,11 @@ public class BookServiceImpl implements IBookService {
         } catch (IOException e) {
             throw e;
         }
+    }
+
+    @Override
+    @Transactional
+    public List<BookInfoDTO> getBookInfo(GetByAuthorCategoryRequest request) {
+        return bookRepository.getBookInfo(request.getCategory(), request.getAuthor());
     }
 }
